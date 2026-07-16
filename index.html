@@ -75,7 +75,7 @@
       <button class="module-btn" data-module="bestbuy"><span>BB</span>Best Buy</button>
       <button class="module-btn" data-module="tacs"><span>TC</span>TACS</button>
       <button class="module-btn" data-module="bedsonline"><span>BO</span>BedsOnline</button>
-      <button class="module-btn" data-module="pdfexcel"><span>PDF</span>PDF para Excel</button>
+      <button class="module-btn" data-module="mobility"><span>PDF</span>Mobility</button>
     </nav>
     <div class="sidebar-footer">Processamento local e seguro</div>
   </aside>
@@ -100,7 +100,6 @@
 <script>
 const QUERO_HEADERS=['Nº do Pedido','Reserva ( confirmação ) ','Contrato','Código Localiza','Razão Social','CNPJ','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Produto','Valor Total (D+K)','Valor Reprocessado','Valor Pago','Diferença','% comissão','Valor da comissão','Nome do usuário','','Sinistro','Status'];
 const ONYX_HEADERS=['CONFIATA','HOTELNAME','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','RCPAIDCOMMISSION','PAYMENTDATE'];
-const PDF_HEADERS=['ID','File','LOC','Passageiro','Emissão','Checkin','Cidade','Checkout','Cidade','Pagamento','Fornec.','Tar U$','Tar R$','Comissão','Liquido'];
 const BENNER_HEADERS=QUERO_HEADERS;
 const COMPANY_NAME='Copastur viagens e turismo ltda', COMPANY_CNPJ='43.637.214/0001-86';
 const EXPEDIA_COMPANY_NAME='Copastur Viagens e Turismo Ltda', EXPEDIA_CLIENT_CODE='13165', EXPEDIA_CLIENT_NAME='Expedia';
@@ -117,7 +116,7 @@ const MODULES={
   bestbuy:{title:'Best Buy x BENNER',subtitle:'Best Buy → Layout padrão BENNER',description:'Selecione o relatório de comissões da Best Buy. O sistema identifica automaticamente a linha do cabeçalho, transforma a comissão negativa em valor positivo e gera o layout pronto para importação no BENNER.',required:['Name','Commission NET BRL','Check-in date','Pax'],valueLabel:'Comissão total',mappings:[['Name','Pedido, reserva e contrato'],['Check-in date','Retorno'],['Commission NET BRL','Valor da comissão sem sinal negativo'],['Pax','Nome do usuário'],['80907 / BESTBUY','Cliente fixo'],['Saída e diárias','Mantidas em branco']]},
   tacs:{title:'TACS x BENNER',subtitle:'TACS → Layout padrão BENNER',description:'Selecione o relatório de pagamentos da TACS. O sistema localiza automaticamente a aba e a linha do cabeçalho, junta o nome e sobrenome do hóspede, calcula as diárias e gera o layout pronto para importação no BENNER.',required:['Confirmation Number','Guest First Name','Guest Last Name','Arrival Date','Departure Date','Paid Pay Amount'],valueLabel:'Comissão total',mappings:[['Confirmation Number','Pedido, reserva e contrato'],['Arrival / Departure Date','Saída e retorno'],['Retorno − Saída','Diárias'],['Paid Pay Amount','Valor da comissão'],['Guest First + Last Name','Nome do usuário'],['121485 / TACS','Cliente fixo']]},
   bedsonline:{title:'BedsOnline x BENNER',subtitle:'BedsOnline → Layout padrão BENNER',description:'Selecione o relatório da BedsOnline. O sistema usa a reserva como identificação, replica o check-in em saída e retorno e gera o layout pronto para importação no BENNER.',required:['Reservas','Emitir Nota Fiscal no Valor de','Check-in','PAX'],valueLabel:'Comissão total',mappings:[['Reservas','Pedido, reserva e contrato'],['Check-in','Saída e retorno'],['Emitir Nota Fiscal no Valor de','Valor da comissão'],['PAX','Nome do usuário'],['24700 / BEDSONLINE','Cliente fixo'],['Diárias','Mantidas em branco']]},
-  pdfexcel:{title:'PDF para Excel',subtitle:'PDF de comissão → Tabela limpa em Excel',description:'Selecione o aviso de comissão em PDF. O sistema extrai somente as linhas da tabela, mantém um único cabeçalho de colunas e remove cabeçalhos de página, rodapés e linhas de TOTAL.',required:[],valueLabel:'Páginas processadas',mappings:[['Cabeçalho do documento','Removido'],['Cabeçalho das páginas','Mantido apenas uma vez'],['Linhas TOTAL','Removidas'],['Linhas da tabela','Convertidas para Excel'],['PDF com várias páginas','Unificado em uma planilha']]}
+  mobility:{title:'Mobility x BENNER',subtitle:'Mobility PDF → Layout padrão BENNER',description:'Selecione o aviso de comissão da Mobility em PDF. O sistema extrai as linhas de todas as páginas, remove cabeçalhos e totais e gera diretamente o layout de importação do BENNER.',required:[],valueLabel:'Comissão total',mappings:[['File','Pedido, reserva e contrato'],['Checkin / Checkout','Saída e retorno'],['Checkout − Checkin','Diárias'],['Liquido','Valor da comissão em positivo'],['Passageiro','Nome do usuário'],['8840 / Mobility','Cliente fixo']]}
 };
 let activeModule='quero',onyxMode='tratado',selectedFile=null,sourceRows=[],sourceSheets=[],convertedRows=[],convertedSheet=null;
 const $=id=>document.getElementById(id),fileInput=$('fileInput'),dropZone=$('dropZone'),dropTitle=$('dropTitle'),statusCard=$('statusCard'),tableCard=$('tableCard'),message=$('message'),convertBtn=$('convertBtn'),downloadBtn=$('downloadBtn');
@@ -128,14 +127,14 @@ fileInput.addEventListener('change',e=>{if(e.target.files?.[0])loadFile(e.target
 ['dragenter','dragover'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
 ['dragleave','drop'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
 dropZone.addEventListener('drop',e=>{const f=e.dataTransfer.files?.[0];if(f)loadFile(f)});
-convertBtn.addEventListener('click',()=>activeModule==='pdfexcel'?convertPdfExcel():(activeModule==='quero'?convertQuero():(activeModule==='expedia'?convertExpedia():(activeModule==='movida'?convertMovida():(activeModule==='bestbuy'?convertBestBuy():(activeModule==='tacs'?convertTacs():(activeModule==='bedsonline'?convertBedsOnline():(onyxMode==='benner'?convertOnyxBenner():convertOnyx()))))))));
+convertBtn.addEventListener('click',()=>activeModule==='mobility'?convertMobility():(activeModule==='quero'?convertQuero():(activeModule==='expedia'?convertExpedia():(activeModule==='movida'?convertMovida():(activeModule==='bestbuy'?convertBestBuy():(activeModule==='tacs'?convertTacs():(activeModule==='bedsonline'?convertBedsOnline():(onyxMode==='benner'?convertOnyxBenner():convertOnyx()))))))));
 downloadBtn.addEventListener('click',downloadConvertedFile);$('newFileBtn').addEventListener('click',()=>fileInput.click());
 
 function currentConfig(){return activeModule==='onyx'&&onyxMode==='benner'?MODULES.onyxBenner:MODULES[activeModule]}
-function applyCurrentConfig(){const cfg=currentConfig();$('moduleTitle').textContent=cfg.title;$('brandSubtitle').textContent=cfg.subtitle;$('moduleDescription').textContent=cfg.description;$('kpiValueLabel').textContent=cfg.valueLabel;$('mappingList').innerHTML=cfg.mappings.map(([a,b])=>`<div class="mapping-item"><b>${escapeHtml(a)}</b><span>${escapeHtml(b)}</span></div>`).join('');const isPdf=activeModule==='pdfexcel';fileInput.accept=isPdf?'.pdf':'.xlsx,.xls';$('fileTypes').textContent=isPdf?'Arquivo aceito: .pdf':'Arquivo aceito: .xlsx ou .xls'}
+function applyCurrentConfig(){const cfg=currentConfig();$('moduleTitle').textContent=cfg.title;$('brandSubtitle').textContent=cfg.subtitle;$('moduleDescription').textContent=cfg.description;$('kpiValueLabel').textContent=cfg.valueLabel;$('mappingList').innerHTML=cfg.mappings.map(([a,b])=>`<div class="mapping-item"><b>${escapeHtml(a)}</b><span>${escapeHtml(b)}</span></div>`).join('');const isPdf=activeModule==='mobility';fileInput.accept=isPdf?'.pdf':'.xlsx,.xls';$('fileTypes').textContent=isPdf?'Arquivo aceito: .pdf':'Arquivo aceito: .xlsx ou .xls'}
 function switchModule(module){activeModule=module;document.querySelectorAll('.module-btn').forEach(b=>b.classList.toggle('active',b.dataset.module===module));$('onyxSubnav').classList.toggle('visible',module==='onyx');applyCurrentConfig();resetState();}
 function switchOnyxMode(mode){onyxMode=mode;document.querySelectorAll('.submodule-btn').forEach(b=>b.classList.toggle('active',b.dataset.onyxMode===mode));applyCurrentConfig();resetState();}
-function resetState(){selectedFile=null;sourceRows=[];sourceSheets=[];convertedRows=[];convertedSheet=null;fileInput.value='';dropTitle.textContent='Clique ou arraste o relatório aqui';statusCard.classList.remove('visible');tableCard.classList.remove('visible');downloadBtn.disabled=true;clearMessage();$('kpiRows').textContent='0';$('kpiConverted').textContent='0';$('kpiValue').textContent=activeModule==='pdfexcel'?'0':'R$ 0,00';$('kpiIgnored').textContent='0';}
+function resetState(){selectedFile=null;sourceRows=[];sourceSheets=[];convertedRows=[];convertedSheet=null;fileInput.value='';dropTitle.textContent='Clique ou arraste o relatório aqui';statusCard.classList.remove('visible');tableCard.classList.remove('visible');downloadBtn.disabled=true;clearMessage();$('kpiRows').textContent='0';$('kpiConverted').textContent='0';$('kpiValue').textContent='R$ 0,00';$('kpiIgnored').textContent='0';}
 function normalizeHeader(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9]/g,'').toLowerCase()}
 function findField(row,names){const map={};Object.keys(row).forEach(k=>map[normalizeHeader(k)]=row[k]);for(const n of names){const v=map[normalizeHeader(n)];if(v!==undefined)return v}return null}
 function excelSerialToDate(v){if(v===null||v===undefined||v==='')return null;if(v instanceof Date&&!Number.isNaN(v.getTime()))return new Date(v.getFullYear(),v.getMonth(),v.getDate());if(typeof v==='number'){const p=XLSX.SSF.parse_date_code(v);return p?new Date(p.y,p.m-1,p.d):null}if(typeof v==='string'){const br=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(br)return new Date(+br[3],+br[2]-1,+br[1]);const iso=v.match(/^(\d{4})-(\d{2})-(\d{2})/);if(iso)return new Date(+iso[1],+iso[2]-1,+iso[3]);const d=new Date(v);if(!Number.isNaN(d.getTime()))return new Date(d.getFullYear(),d.getMonth(),d.getDate())}return null}
@@ -145,7 +144,7 @@ function formatMoney(v){return new Intl.NumberFormat('pt-BR',{style:'currency',c
 async function loadFile(file){
   clearMessage();
   const ext=file.name.split('.').pop().toLowerCase();
-  if(activeModule==='pdfexcel'){
+  if(activeModule==='mobility'){
     if(ext!=='pdf'){showMessage('Selecione um arquivo no formato .pdf.','error');return}
     try{await loadPdfSource(file)}catch(err){selectedFile=null;sourceRows=[];statusCard.classList.remove('visible');tableCard.classList.remove('visible');showMessage(`Não foi possível ler o PDF. ${err.message}`,'error')}
     return;
@@ -285,7 +284,7 @@ async function loadPdfSource(file){
   statusCard.classList.add('visible');tableCard.classList.remove('visible');downloadBtn.disabled=true;dropTitle.textContent=file.name;$('fileName').textContent=file.name;
   $('fileDetails').textContent=`${sourceRows.length} linhas encontradas em ${pdf.numPages} página(s). Clique em “Converter relatório”.`;
   $('kpiRows').textContent=sourceRows.length;$('kpiConverted').textContent='0';$('kpiValue').textContent=String(pdf.numPages);$('kpiIgnored').textContent='0';
-  showMessage('PDF lido com sucesso. Cabeçalhos de página e linhas de total serão removidos.','success');
+  showMessage('PDF da Mobility lido com sucesso. Cabeçalhos de página e linhas de total serão removidos.','success');
 }
 
 function extractPdfTableRows(items,pageWidth,pageNumber){
@@ -311,19 +310,29 @@ function extractPdfTableRows(items,pageWidth,pageNumber){
   return out;
 }
 
-function convertPdfExcel(){
+function convertMobility(){
   if(!sourceRows.length)return;
-  const data=[PDF_HEADERS];
-  convertedRows=sourceRows.map(r=>[r.id,r.file,r.loc,r.passageiro,r.emissao,r.checkin,r.cidadeCheckin,r.checkout,r.cidadeCheckout,r.pagamento,r.fornec,r.tarUsd,r.tarBrl,r.comissao,r.liquido]);
-  data.push(...convertedRows);
-  convertedSheet=XLSX.utils.aoa_to_sheet(data);
-  convertedSheet['!autofilter']={ref:`A1:O${data.length}`};convertedSheet['!freeze']={xSplit:0,ySplit:1};
-  convertedSheet['!cols']=[{wch:10},{wch:12},{wch:11},{wch:31},{wch:12},{wch:12},{wch:24},{wch:12},{wch:24},{wch:13},{wch:14},{wch:12},{wch:13},{wch:11},{wch:13}];
-  for(let r=2;r<=data.length;r++){['E','F','H'].forEach(c=>{if(convertedSheet[`${c}${r}`])convertedSheet[`${c}${r}`].z='dd/mm/yyyy'});['L','M','O'].forEach(c=>{if(convertedSheet[`${c}${r}`])convertedSheet[`${c}${r}`].z='#,##0.00'})}
-  $('kpiConverted').textContent=convertedRows.length;$('kpiIgnored').textContent='0';$('fileDetails').textContent='Conversão concluída sem cabeçalhos de página e sem linhas de total.';downloadBtn.disabled=false;tableCard.classList.add('visible');
-  renderTable(PDF_HEADERS,convertedRows.slice(0,100));showMessage(`Conversão concluída: ${convertedRows.length} linhas prontas para o Excel.`,'success');
+  const data=[BENNER_HEADERS];
+  convertedRows=[];let ignored=0,total=0;
+  sourceRows.forEach(row=>{
+    const file=String(row.file||'').trim();
+    const passageiro=String(row.passageiro||'').trim();
+    const saida=excelSerialToDate(row.checkin);
+    const retorno=excelSerialToDate(row.checkout);
+    const comissao=Math.abs(parseNumber(row.liquido));
+    if(!file&&!passageiro&&!saida&&!retorno&&comissao===0){ignored++;return}
+    const excelRow=data.length+1;
+    const diarias=saida&&retorno?Math.round((retorno-saida)/86400000):'';
+    total+=comissao;
+    data.push([file,file,file,'8840','Copastur Viagens e Turismo Ltda',COMPANY_CNPJ,'8840','Mobility',saida,retorno,null,'','','','','','',comissao,passageiro,'','','']);
+    convertedRows.push({pedido:file,reserva:file,contrato:file,saida,retorno,diarias,comissao,usuario:passageiro,excelRow});
+  });
+  convertedSheet=XLSX.utils.aoa_to_sheet(data,{cellDates:true});
+  convertedRows.forEach(x=>convertedSheet[`K${x.excelRow}`]=x.saida&&x.retorno?{t:'n',f:`J${x.excelRow}-I${x.excelRow}`,v:x.diarias}:{t:'s',v:''});
+  formatSheet(convertedSheet,data.length,['I','J'],['R'],22,true);
+  finishConversion(total,ignored);
+  renderMobilityPreview();
 }
-
 function convertQuero(){if(!sourceRows.length)return;const data=[QUERO_HEADERS];convertedRows=[];let ignored=0,total=0;sourceRows.forEach(row=>{const locRaw=findField(row,['Localizador']),user=findField(row,['Passageiro']),saida=excelSerialToDate(findField(row,['Data Partida'])),retorno=excelSerialToDate(findField(row,['Data Chegada'])),comissao=parseNumber(findField(row,['Comissão','Comissao']));if(locRaw===null&&!user&&!saida&&!retorno&&comissao===0){ignored++;return}const loc=locRaw==null?'':String(locRaw),excelRow=data.length+1;total+=comissao;data.push([loc,loc,'','',COMPANY_NAME,COMPANY_CNPJ,'','',saida,retorno,null,'',comissao,'',comissao,'','',comissao,user||'','','','']);convertedRows.push({pedido:loc,reserva:loc,saida,retorno,diarias:saida&&retorno?Math.round((retorno-saida)/86400000):'',comissao,usuario:user||'',excelRow})});convertedSheet=XLSX.utils.aoa_to_sheet(data,{cellDates:true});convertedRows.forEach(x=>convertedSheet[`K${x.excelRow}`]=x.saida&&x.retorno?{t:'n',f:`J${x.excelRow}-I${x.excelRow}`,v:x.diarias}:{t:'s',v:''});formatSheet(convertedSheet,data.length,['I','J'],['M','O','R'],22);finishConversion(total,ignored);renderQueroPreview()}
 
 function convertOnyx(){if(!sourceRows.length)return;const data=[ONYX_HEADERS];convertedRows=[];let ignored=0,total=0;sourceRows.forEach(row=>{const confiata=findField(row,['CONFIATA']),hotel=findField(row,['HOTELNAME']),guest=findField(row,['GUESTNAME']),confno=findField(row,['CONFNO']),dateIn=excelSerialToDate(findField(row,['CONFDATEIN'])),dateOut=excelSerialToDate(findField(row,['CONFDATEOUT'])),commission=parseNumber(findField(row,['RCPAIDCOMMISSION'])),paymentDate=excelSerialToDate(findField(row,['AGENTPAYMENTDATE','PAYMENTDATE']));if(confiata===null&&!hotel&&!guest&&!confno&&!dateIn&&!dateOut&&commission===0&&!paymentDate){ignored++;return}total+=commission;data.push([confiata??'',hotel??'',guest??'',confno??'',dateIn,dateOut,commission,paymentDate]);convertedRows.push({confiata:confiata??'',hotel:hotel??'',guest:guest??'',confno:confno??'',dateIn,dateOut,commission,paymentDate})});convertedSheet=XLSX.utils.aoa_to_sheet(data,{cellDates:true});formatSheet(convertedSheet,data.length,['E','F','H'],['G'],8);convertedSheet['!cols']=[{wch:14},{wch:36},{wch:30},{wch:22},{wch:13},{wch:13},{wch:22},{wch:15}];finishConversion(total,ignored);renderOnyxPreview()}
@@ -467,8 +476,9 @@ function renderMovidaPreview(){renderTable(['Nº do Pedido','Reserva','Contrato'
 function renderBestBuyPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Retorno','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,BESTBUY_CLIENT_CODE,BESTBUY_CLIENT_CODE,BESTBUY_CLIENT_NAME,formatDateBR(r.retorno),formatMoney(r.comissao),r.usuario]))}
 function renderTacsPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,TACS_CLIENT_CODE,TACS_CLIENT_CODE,TACS_CLIENT_NAME,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),r.usuario]))}
 function renderBedsOnlinePreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,BEDSONLINE_CLIENT_CODE,BEDSONLINE_CLIENT_CODE,BEDSONLINE_CLIENT_NAME,formatDateBR(r.saida),formatDateBR(r.retorno),formatMoney(r.comissao),r.usuario]))}
+function renderMobilityPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,'8840','8840','Mobility',formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),r.usuario]))}
 function renderTable(headers,rows){$('previewTable').innerHTML=`<thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(value=>`<td>${valueOrBlank(value)}</td>`).join('')}</tr>`).join('')}</tbody>`}
-function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();if(activeModule==='pdfexcel'){XLSX.utils.book_append_sheet(wb,convertedSheet,'DADOS_PDF');const clean=selectedFile.name.replace(/\.pdf$/i,'');XLSX.writeFile(wb,`${clean}_CONVERTIDO.xlsx`,{compression:true});return;}const isBenner=activeModule==='onyx'&&onyxMode==='benner';const isExpedia=activeModule==='expedia';const isMovida=activeModule==='movida';const isBestBuy=activeModule==='bestbuy';const isTacs=activeModule==='tacs';const isBedsOnline=activeModule==='bedsonline';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isBedsOnline?'BEDSONLINE_BENNER':(isTacs?'TACS_BENNER':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_Tratado'))))));XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isBedsOnline?'BedsOnline convertido para layout BENNER':(isTacs?'TACS convertido para layout BENNER':(isBestBuy?'Best Buy convertido para layout BENNER':(isMovida?'Movida convertido para layout BENNER':(isExpedia?'Expedia convertido para layout BENNER':(isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado')))))),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isBedsOnline?'BEDSONLINE_BENNER':(isTacs?'TACS_BENNER':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_TRATADO'))))));XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
+function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();if(activeModule==='mobility'){XLSX.utils.book_append_sheet(wb,convertedSheet,'MOBILITY_BENNER');wb.Props={Title:'Mobility convertido para layout BENNER',Subject:'Conversão automática Mobility',Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.pdf$/i,'');XLSX.writeFile(wb,`${clean}_MOBILITY_BENNER.xlsx`,{compression:true,cellDates:true});return;}const isBenner=activeModule==='onyx'&&onyxMode==='benner';const isExpedia=activeModule==='expedia';const isMovida=activeModule==='movida';const isBestBuy=activeModule==='bestbuy';const isTacs=activeModule==='tacs';const isBedsOnline=activeModule==='bedsonline';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isBedsOnline?'BEDSONLINE_BENNER':(isTacs?'TACS_BENNER':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_Tratado'))))));XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isBedsOnline?'BedsOnline convertido para layout BENNER':(isTacs?'TACS convertido para layout BENNER':(isBestBuy?'Best Buy convertido para layout BENNER':(isMovida?'Movida convertido para layout BENNER':(isExpedia?'Expedia convertido para layout BENNER':(isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado')))))),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isBedsOnline?'BEDSONLINE_BENNER':(isTacs?'TACS_BENNER':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_TRATADO'))))));XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
 function valueOrBlank(v){return v===''||v===null||v===undefined?'<span class="empty-value">—</span>':escapeHtml(String(v))}function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}function showMessage(t,type){message.textContent=t;message.className=`message show ${type}`}function clearMessage(){message.textContent='';message.className='message'}
 switchModule('quero');
 </script>
