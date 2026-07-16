@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Conversor de Relatórios | Comissões</title>
+  <title>Conversor de Relatórios - Comissão</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     :root{--primary:#123a63;--primary2:#1e5b92;--accent:#f2b705;--success:#11845b;--danger:#c43d4b;--bg:#f3f6fa;--card:#fff;--text:#172435;--muted:#6b7888;--border:#dce4ed;--shadow:0 18px 45px rgba(20,48,76,.10)}
@@ -20,13 +20,71 @@
     button.action{border:0;border-radius:11px;padding:12px 17px;font:inherit;font-weight:750;cursor:pointer;transition:.2s}button.action:hover{transform:translateY(-1px)}button.action:disabled{opacity:.45;cursor:not-allowed;transform:none}.btn-primary{color:#fff;background:linear-gradient(135deg,var(--primary2),var(--primary))}.btn-success{color:#fff;background:var(--success)}.btn-light{color:var(--primary);background:#eaf1f8}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi{padding:16px;border-radius:14px;background:#f7f9fc;border:1px solid var(--border)}.kpi small{display:block;margin-bottom:7px;color:var(--muted)}.kpi strong{font-size:21px;color:var(--primary)}
     .table-card{display:none;overflow:hidden}.table-card.visible{display:block}.table-title{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:15px;align-items:center}.table-title h3{margin:0}.table-title span{color:var(--muted);font-size:12px}.table-wrap{width:100%;overflow:auto;max-height:530px}table{width:max-content;min-width:100%;border-collapse:collapse;font-size:12px}th,td{padding:11px 12px;border-bottom:1px solid #e9eef4;white-space:nowrap;text-align:left}th{position:sticky;top:0;z-index:2;color:#fff;background:var(--primary)}tbody tr:hover{background:#f4f8fc}.empty-value{color:#a3aab4}.message{display:none;margin-top:16px;padding:13px 15px;border-radius:11px;font-size:13px}.message.show{display:block}.message.error{color:#8a2430;background:#fdecee;border:1px solid #f4c8cd}.message.success{color:#0a6545;background:#e8f7f1;border:1px solid #bce6d6}footer{margin-top:24px;text-align:center;color:var(--muted);font-size:12px}
     @media(max-width:900px){.hero{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.status-head{align-items:flex-start;flex-direction:column}.badge{display:none}}@media(max-width:520px){.topbar{padding:14px 4vw}main{width:94vw;margin-top:20px}.upload-card,.side-card{padding:20px}.kpis{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.module-nav{width:100%}.module-btn{flex:1;padding:12px 10px}}
+  
+    /* Layout com menu lateral */
+    body{overflow-x:hidden}
+    .app-shell{min-height:100vh;display:flex}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:286px;display:flex;flex-direction:column;padding:22px 18px;background:linear-gradient(180deg,#0b2d4d 0%,#123a63 58%,#0c3154 100%);color:#fff;box-shadow:12px 0 32px rgba(8,35,60,.16);z-index:20;overflow-y:auto}
+    .sidebar-brand{display:flex;align-items:center;gap:13px;padding:4px 4px 22px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:20px}
+    .sidebar-logo,.logo-fallback{width:52px;height:52px;flex:0 0 52px;border-radius:14px;background:#fff;object-fit:contain;padding:5px;box-shadow:0 8px 20px rgba(0,0,0,.18)}
+    .logo-fallback{display:none;place-items:center;padding:0;background:var(--accent);color:var(--primary);font-size:25px;font-weight:900}
+    .sidebar-brand-text{min-width:0}.sidebar-brand h1{margin:0;font-size:15px;line-height:1.25}.sidebar-brand p{margin:5px 0 0;color:#bcd0e2;font-size:11px}
+    .sidebar-section-title{padding:0 8px 9px;color:#90aec7;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
+    .sidebar .module-nav{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;max-width:none;margin:0;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+    .sidebar .module-btn{width:100%;display:flex;align-items:center;gap:11px;padding:11px 12px;text-align:left;color:#dce9f4;background:transparent;border:1px solid transparent;border-radius:12px;font-size:13px}
+    .sidebar .module-btn span{width:31px;height:31px;display:grid;place-items:center;flex:0 0 31px;border-radius:9px;background:rgba(255,255,255,.10);color:#fff;font-size:10px;font-weight:900;letter-spacing:.03em}
+    .sidebar .module-btn:hover{color:#fff;background:rgba(255,255,255,.08);transform:none}
+    .sidebar .module-btn.active{color:#123a63;background:#fff;border-color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.16)}
+    .sidebar .module-btn.active span{background:var(--accent);color:#123a63}
+    .sidebar .submodule-nav{display:none;flex-direction:column;gap:5px;margin:0 0 4px 43px;padding:0 0 0 10px;border-left:1px solid rgba(255,255,255,.18)}
+    .sidebar .submodule-nav.visible{display:flex}
+    .sidebar .submodule-btn{width:100%;padding:8px 10px;text-align:left;color:#c9d9e7;background:transparent;border:0;border-radius:8px;font-size:11px}
+    .sidebar .submodule-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+    .sidebar .submodule-btn.active{color:#fff;background:rgba(17,132,91,.95);box-shadow:none}
+    .sidebar-footer{margin-top:auto;padding:18px 8px 4px;color:#9db5ca;font-size:10px;text-align:center}
+    .main-area{width:calc(100% - 286px);margin-left:286px;min-height:100vh}
+    .topbar{min-height:92px;padding:0 4vw;background:#fff;color:var(--text);border-bottom:1px solid var(--border);box-shadow:0 6px 20px rgba(20,48,76,.06)}
+    .topbar .brand h1{color:var(--primary);font-size:clamp(20px,2vw,28px)}
+    .topbar .brand p{color:var(--muted);font-size:12px}
+    .topbar .badge{color:var(--primary);border-color:#cbd9e6;background:#edf4fa;font-weight:700}
+    main{width:min(1180px,92%);margin:28px auto 60px}
+    @media(max-width:900px){
+      .app-shell{display:block}.sidebar{position:relative;width:100%;height:auto;inset:auto;padding:14px 14px 12px}.sidebar-brand{padding-bottom:12px;margin-bottom:12px}.sidebar-logo,.logo-fallback{width:44px;height:44px;flex-basis:44px}.sidebar-brand h1{font-size:14px}.sidebar-section-title,.sidebar-footer{display:none}.sidebar .module-nav{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));overflow-x:auto;padding-bottom:4px}.sidebar .module-btn{justify-content:flex-start;white-space:nowrap}.sidebar .submodule-nav{grid-column:1/-1;margin-left:0;padding-left:0;border-left:0;flex-direction:row}.main-area{width:100%;margin-left:0}.topbar{min-height:78px;padding:12px 4vw}.topbar .badge{display:none}main{width:94%;margin-top:20px}}
+    @media(max-width:620px){.sidebar .module-nav{grid-template-columns:repeat(2,minmax(140px,1fr))}.topbar .brand h1{font-size:18px}.topbar .brand p{font-size:11px}}
   </style>
 </head>
 <body>
-<header class="topbar"><div class="brand"><div class="brand-mark">↔</div><div><h1>Conversor de Relatórios</h1><p id="brandSubtitle">Quero Passagem → Layout padrão de comissões</p></div></div><div class="badge">Processamento local e seguro</div></header>
-<main>
-  <nav class="module-nav"><button class="module-btn active" data-module="quero">Quero Passagem</button><button class="module-btn" data-module="onyx">ONYX</button><button class="module-btn" data-module="expedia">Expedia</button><button class="module-btn" data-module="movida">Movida</button><button class="module-btn" data-module="bestbuy">Best Buy</button><button class="module-btn" data-module="tacs">TACS</button><button class="module-btn" data-module="bedsonline">BedsOnline</button></nav>
-  <nav class="submodule-nav" id="onyxSubnav"><button class="submodule-btn active" data-onyx-mode="tratado">ONYX Tratado</button><button class="submodule-btn" data-onyx-mode="benner">ONYX x BENNER</button></nav>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="copastur.png" alt="Logo Copastur" class="sidebar-logo" onerror="this.style.display='none';document.querySelector('.logo-fallback').style.display='grid'">
+      <div class="logo-fallback">C</div>
+      <div class="sidebar-brand-text">
+        <h1>Conversor de Relatórios - Comissão</h1>
+        <p>Central de conversões</p>
+      </div>
+    </div>
+    <div class="sidebar-section-title">Conversores</div>
+    <nav class="module-nav">
+      <button class="module-btn active" data-module="quero"><span>QP</span>Quero Passagem</button>
+      <button class="module-btn" data-module="onyx"><span>ON</span>ONYX</button>
+      <nav class="submodule-nav" id="onyxSubnav"><button class="submodule-btn active" data-onyx-mode="tratado">ONYX Tratado</button><button class="submodule-btn" data-onyx-mode="benner">ONYX x BENNER</button></nav>
+      <button class="module-btn" data-module="expedia"><span>EX</span>Expedia</button>
+      <button class="module-btn" data-module="movida"><span>MV</span>Movida</button>
+      <button class="module-btn" data-module="bestbuy"><span>BB</span>Best Buy</button>
+      <button class="module-btn" data-module="tacs"><span>TC</span>TACS</button>
+      <button class="module-btn" data-module="bedsonline"><span>BO</span>BedsOnline</button>
+    </nav>
+    <div class="sidebar-footer">Processamento local e seguro</div>
+  </aside>
+  <div class="main-area">
+    <header class="topbar">
+      <div class="brand">
+        <div><h1>Conversor de Relatórios - Comissão</h1><p id="brandSubtitle">Quero Passagem → Layout padrão de comissões</p></div>
+      </div>
+      <div class="badge">Excel → Layout BENNER</div>
+    </header>
+    <main>
   <section class="hero">
     <div class="card upload-card"><div class="eyebrow" id="eyebrow">Conversão automática</div><h2 id="moduleTitle">Quero Passagem</h2><p id="moduleDescription">Selecione o Excel exportado pela Quero Passagem. O sistema reorganiza as colunas, calcula as diárias e gera um novo arquivo pronto para importação.</p><label class="drop-zone" id="dropZone" for="fileInput"><div class="drop-icon">⇧</div><strong id="dropTitle">Clique ou arraste o relatório aqui</strong><span>Arquivo aceito: .xlsx ou .xls</span></label><input type="file" id="fileInput" accept=".xlsx,.xls"><div id="message" class="message"></div></div>
     <aside class="card side-card"><h3 id="mappingTitle">Principais conversões</h3><div class="mapping-list" id="mappingList"></div></aside>
@@ -34,7 +92,9 @@
   <section class="card status-card" id="statusCard"><div class="status-head"><div class="file-meta"><h3 id="fileName">Arquivo carregado</h3><p id="fileDetails">Aguardando conversão</p></div><div class="actions"><button class="action btn-light" id="newFileBtn">Trocar arquivo</button><button class="action btn-primary" id="convertBtn">Converter relatório</button><button class="action btn-success" id="downloadBtn" disabled>Baixar Excel convertido</button></div></div><div class="kpis"><div class="kpi"><small>Linhas encontradas</small><strong id="kpiRows">0</strong></div><div class="kpi"><small>Linhas convertidas</small><strong id="kpiConverted">0</strong></div><div class="kpi"><small id="kpiValueLabel">Comissão total</small><strong id="kpiValue">R$ 0,00</strong></div><div class="kpi"><small>Registros ignorados</small><strong id="kpiIgnored">0</strong></div></div></section>
   <section class="card table-card" id="tableCard"><div class="table-title"><h3>Prévia do arquivo convertido</h3><span>Exibindo até 100 registros</span></div><div class="table-wrap"><table id="previewTable"></table></div></section>
   <footer>Os dados permanecem no navegador e não são enviados para servidores externos.</footer>
-</main>
+    </main>
+  </div>
+</div>
 <script>
 const QUERO_HEADERS=['Nº do Pedido','Reserva ( confirmação ) ','Contrato','Código Localiza','Razão Social','CNPJ','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Produto','Valor Total (D+K)','Valor Reprocessado','Valor Pago','Diferença','% comissão','Valor da comissão','Nome do usuário','','Sinistro','Status'];
 const ONYX_HEADERS=['CONFIATA','HOTELNAME','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','RCPAIDCOMMISSION','PAYMENTDATE'];
