@@ -24,7 +24,7 @@
 <body>
 <header class="topbar"><div class="brand"><div class="brand-mark">↔</div><div><h1>Conversor de Relatórios</h1><p id="brandSubtitle">Quero Passagem → Layout padrão de comissões</p></div></div><div class="badge">Processamento local e seguro</div></header>
 <main>
-  <nav class="module-nav"><button class="module-btn active" data-module="quero">Quero Passagem</button><button class="module-btn" data-module="onyx">ONYX</button><button class="module-btn" data-module="expedia">Expedia</button><button class="module-btn" data-module="movida">Movida</button></nav>
+  <nav class="module-nav"><button class="module-btn active" data-module="quero">Quero Passagem</button><button class="module-btn" data-module="onyx">ONYX</button><button class="module-btn" data-module="expedia">Expedia</button><button class="module-btn" data-module="movida">Movida</button><button class="module-btn" data-module="bestbuy">Best Buy</button></nav>
   <nav class="submodule-nav" id="onyxSubnav"><button class="submodule-btn active" data-onyx-mode="tratado">ONYX Tratado</button><button class="submodule-btn" data-onyx-mode="benner">ONYX x BENNER</button></nav>
   <section class="hero">
     <div class="card upload-card"><div class="eyebrow" id="eyebrow">Conversão automática</div><h2 id="moduleTitle">Quero Passagem</h2><p id="moduleDescription">Selecione o Excel exportado pela Quero Passagem. O sistema reorganiza as colunas, calcula as diárias e gera um novo arquivo pronto para importação.</p><label class="drop-zone" id="dropZone" for="fileInput"><div class="drop-icon">⇧</div><strong id="dropTitle">Clique ou arraste o relatório aqui</strong><span>Arquivo aceito: .xlsx ou .xls</span></label><input type="file" id="fileInput" accept=".xlsx,.xls"><div id="message" class="message"></div></div>
@@ -41,12 +41,14 @@ const BENNER_HEADERS=QUERO_HEADERS;
 const COMPANY_NAME='Copastur viagens e turismo ltda', COMPANY_CNPJ='43.637.214/0001-86';
 const EXPEDIA_COMPANY_NAME='Copastur Viagens e Turismo Ltda', EXPEDIA_CLIENT_CODE='13165', EXPEDIA_CLIENT_NAME='Expedia';
 const MOVIDA_COMPANY_NAME='Copastur Viagens e Turismo Ltda', MOVIDA_CLIENT_CODE='1926', MOVIDA_CLIENT_NAME='MOVIDA';
+const BESTBUY_COMPANY_NAME='Copastur Viagens e Turismo Ltda', BESTBUY_CLIENT_CODE='80907', BESTBUY_CLIENT_NAME='BESTBUY';
 const MODULES={
   quero:{title:'Quero Passagem',subtitle:'Quero Passagem → Layout padrão de comissões',description:'Selecione o Excel exportado pela Quero Passagem. O sistema reorganiza as colunas, calcula as diárias e gera um novo arquivo pronto para importação.',required:['Localizador','Data Partida','Data Chegada','Comissão','Passageiro'],valueLabel:'Comissão total',mappings:[['Localizador','Pedido e reserva'],['Data Partida','Saída'],['Data Chegada','Retorno'],['Retorno − Saída','Diárias'],['Comissão','Valores total, pago e comissão'],['Passageiro','Nome do usuário']]},
   onyx:{title:'ONYX',subtitle:'ONYX → Layout tratado para conciliação',description:'Selecione o DataExtract da ONYX. O sistema mantém somente as colunas necessárias, reordena os dados, converte as datas e renomeia AGENTPAYMENTDATE para PAYMENTDATE.',required:['CONFIATA','HOTELNAME','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','RCPAIDCOMMISSION','AGENTPAYMENTDATE'],valueLabel:'Comissão paga',mappings:[['CONFIATA','Código IATA'],['HOTELNAME','Hotel'],['GUESTNAME','Hóspede'],['CONFNO','Confirmação'],['CONFDATEIN / OUT','Check-in e check-out'],['RCPAIDCOMMISSION','Comissão paga'],['AGENTPAYMENTDATE','PAYMENTDATE']]},
   onyxBenner:{title:'ONYX x BENNER',subtitle:'ONYX → Layout padrão BENNER',description:'Selecione o arquivo ONYX já tratado. O sistema lê todas as abas mensais válidas, usa o valor da comissão ajustado e gera o mesmo layout padrão utilizado na Quero Passagem.',required:['CONFIATA','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','Valor da comissão ajustado'],valueLabel:'Comissão ajustada',mappings:[['CONFIATA','Nº do Pedido'],['CONFNO','Reserva'],['CONFDATEIN / OUT','Saída e retorno'],['Retorno − Saída','Diárias'],['Valor da comissão ajustado','Valores total, pago e comissão'],['GUESTNAME','Nome do usuário'],['118957 / ONYX','Cliente fixo']]},
   expedia:{title:'Expedia x BENNER',subtitle:'Expedia → Layout padrão BENNER',description:'Selecione o relatório TAAP Commission Statement da Expedia. O sistema identifica automaticamente a linha do cabeçalho, calcula as diárias e gera o layout pronto para importação no BENNER.',required:['Itinerary Number','Travel Start Date','Travel End Date','Commission','Traveler Name'],valueLabel:'Comissão total',mappings:[['Itinerary Number','Pedido, reserva e contrato'],['Travel Start / End Date','Saída e retorno'],['Retorno − Saída','Diárias'],['Commission','Valor da comissão'],['Traveler Name','Nome do usuário'],['13165 / Expedia','Cliente fixo']]},
-  movida:{title:'Movida x BENNER',subtitle:'Movida → Layout padrão BENNER',description:'Selecione o relatório de pagamento de comissão da Movida. O sistema lê o arquivo XLS exportado em formato texto, calcula as diárias e gera o layout pronto para importação no BENNER.',required:['Voucher','Data da retirada','Data de devolução','Total Comissão','Nome do condutor'],valueLabel:'Comissão total',mappings:[['Voucher','Pedido, reserva e contrato'],['Data da retirada / devolução','Saída e retorno'],['Retorno − Saída','Diárias'],['Total Comissão','Valor da comissão'],['Nome do condutor','Nome do usuário'],['1926 / MOVIDA','Cliente fixo']]}
+  movida:{title:'Movida x BENNER',subtitle:'Movida → Layout padrão BENNER',description:'Selecione o relatório de pagamento de comissão da Movida. O sistema lê o arquivo XLS exportado em formato texto, calcula as diárias e gera o layout pronto para importação no BENNER.',required:['Voucher','Data da retirada','Data de devolução','Total Comissão','Nome do condutor'],valueLabel:'Comissão total',mappings:[['Voucher','Pedido, reserva e contrato'],['Data da retirada / devolução','Saída e retorno'],['Retorno − Saída','Diárias'],['Total Comissão','Valor da comissão'],['Nome do condutor','Nome do usuário'],['1926 / MOVIDA','Cliente fixo']]},
+  bestbuy:{title:'Best Buy x BENNER',subtitle:'Best Buy → Layout padrão BENNER',description:'Selecione o relatório de comissões da Best Buy. O sistema identifica automaticamente a linha do cabeçalho, transforma a comissão negativa em valor positivo e gera o layout pronto para importação no BENNER.',required:['Name','Commission NET BRL','Check-in date','Pax'],valueLabel:'Comissão total',mappings:[['Name','Pedido, reserva e contrato'],['Check-in date','Retorno'],['Commission NET BRL','Valor da comissão sem sinal negativo'],['Pax','Nome do usuário'],['80907 / BESTBUY','Cliente fixo'],['Saída e diárias','Mantidas em branco']]}
 };
 let activeModule='quero',onyxMode='tratado',selectedFile=null,sourceRows=[],sourceSheets=[],convertedRows=[],convertedSheet=null;
 const $=id=>document.getElementById(id),fileInput=$('fileInput'),dropZone=$('dropZone'),dropTitle=$('dropTitle'),statusCard=$('statusCard'),tableCard=$('tableCard'),message=$('message'),convertBtn=$('convertBtn'),downloadBtn=$('downloadBtn');
@@ -57,7 +59,7 @@ fileInput.addEventListener('change',e=>{if(e.target.files?.[0])loadFile(e.target
 ['dragenter','dragover'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
 ['dragleave','drop'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
 dropZone.addEventListener('drop',e=>{const f=e.dataTransfer.files?.[0];if(f)loadFile(f)});
-convertBtn.addEventListener('click',()=>activeModule==='quero'?convertQuero():(activeModule==='expedia'?convertExpedia():(activeModule==='movida'?convertMovida():(onyxMode==='benner'?convertOnyxBenner():convertOnyx()))));
+convertBtn.addEventListener('click',()=>activeModule==='quero'?convertQuero():(activeModule==='expedia'?convertExpedia():(activeModule==='movida'?convertMovida():(activeModule==='bestbuy'?convertBestBuy():(onyxMode==='benner'?convertOnyxBenner():convertOnyx())))));
 downloadBtn.addEventListener('click',downloadConvertedFile);$('newFileBtn').addEventListener('click',()=>fileInput.click());
 
 function currentConfig(){return activeModule==='onyx'&&onyxMode==='benner'?MODULES.onyxBenner:MODULES[activeModule]}
@@ -123,6 +125,20 @@ async function loadFile(file){
         const obj={};headers.forEach((h,i)=>{if(h)obj[h]=row[i]??null});return obj;
       });
       if(!sourceRows.length)throw new Error('O arquivo Expedia não contém linhas de transações.');
+    }else if(activeModule==='bestbuy'){
+      const sh=wb.Sheets[wb.SheetNames[0]];
+      const matrix=XLSX.utils.sheet_to_json(sh,{header:1,defval:null,raw:true});
+      const requiredNormalized=cfg.required.map(normalizeHeader);
+      const headerIndex=matrix.findIndex(row=>{
+        const normalized=(row||[]).map(normalizeHeader);
+        return requiredNormalized.every(h=>normalized.includes(h));
+      });
+      if(headerIndex<0)throw new Error(`Não foi possível localizar o cabeçalho da Best Buy. Colunas esperadas: ${cfg.required.join(', ')}.`);
+      const headers=matrix[headerIndex].map(v=>String(v??'').trim());
+      sourceRows=matrix.slice(headerIndex+1).filter(row=>row.some(v=>v!==null&&v!==undefined&&String(v).trim()!=='')).map(row=>{
+        const obj={};headers.forEach((h,i)=>{if(h)obj[h]=row[i]??null});return obj;
+      });
+      if(!sourceRows.length)throw new Error('O arquivo Best Buy não contém linhas de transações.');
     }else{
       const sh=wb.Sheets[wb.SheetNames[0]];
       sourceRows=XLSX.utils.sheet_to_json(sh,{defval:null,raw:true});
@@ -208,6 +224,26 @@ function convertMovida(){
   finishConversion(total,ignored);renderMovidaPreview();
 }
 
+
+function convertBestBuy(){
+  if(!sourceRows.length)return;
+  const data=[BENNER_HEADERS];convertedRows=[];let ignored=0,total=0;
+  sourceRows.forEach(row=>{
+    const nameRaw=findField(row,['Name']);
+    const pax=findField(row,['Pax']);
+    const retorno=excelSerialToDate(findField(row,['Check-in date','Check in date']));
+    const comissao=Math.abs(parseNumber(findField(row,['Commission NET BRL'])));
+    if(nameRaw===null&&!pax&&!retorno&&comissao===0){ignored++;return}
+    const name=nameRaw==null?'':String(nameRaw).trim();
+    total+=comissao;
+    data.push([name,name,name,BESTBUY_CLIENT_CODE,BESTBUY_COMPANY_NAME,COMPANY_CNPJ,BESTBUY_CLIENT_CODE,BESTBUY_CLIENT_NAME,'',retorno,'','','','','','','',comissao,pax||'','','','']);
+    convertedRows.push({pedido:name,reserva:name,contrato:name,retorno,comissao,usuario:pax||''});
+  });
+  convertedSheet=XLSX.utils.aoa_to_sheet(data,{cellDates:true});
+  formatSheet(convertedSheet,data.length,['J'],['R'],22,true);
+  finishConversion(total,ignored);renderBestBuyPreview();
+}
+
 function formatSheet(sheet,rowCount,dateCols,moneyCols,colCount,standardLayout=false){dateCols.forEach(col=>{for(let r=2;r<=rowCount;r++){const c=sheet[`${col}${r}`];if(c)c.z='dd/mm/yyyy'}});moneyCols.forEach(col=>{for(let r=2;r<=rowCount;r++){const c=sheet[`${col}${r}`];if(c)c.z='#,##0.00'}});sheet['!autofilter']={ref:`A1:${XLSX.utils.encode_col(colCount-1)}${rowCount}`};sheet['!freeze']={xSplit:0,ySplit:1};if(activeModule==='quero'||standardLayout)sheet['!cols']=[{wch:17},{wch:23},{wch:13},{wch:16},{wch:38},{wch:20},{wch:18},{wch:24},{wch:12},{wch:12},{wch:10},{wch:15},{wch:18},{wch:19},{wch:14},{wch:14},{wch:14},{wch:19},{wch:34},{wch:3},{wch:14},{wch:14}]}
 function finishConversion(total,ignored){$('kpiConverted').textContent=convertedRows.length;$('kpiValue').textContent=formatMoney(total);$('kpiIgnored').textContent=ignored;$('fileDetails').textContent='Conversão concluída. Confira a prévia e baixe o arquivo.';downloadBtn.disabled=convertedRows.length===0;tableCard.classList.add('visible');showMessage(`Conversão concluída: ${convertedRows.length} linhas prontas.`,'success')}
 function renderQueroPreview(){renderTable(['Nº do Pedido','Reserva','Razão Social','CNPJ','Saída','Retorno','Diárias','Valor Pago','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,COMPANY_NAME,COMPANY_CNPJ,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),formatMoney(r.comissao),r.usuario]))}
@@ -215,8 +251,9 @@ function renderOnyxPreview(){renderTable(ONYX_HEADERS,convertedRows.slice(0,100)
 function renderOnyxBennerPreview(){renderTable(['Nº do Pedido','Reserva','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor Pago','Valor da comissão','Nome do usuário','Aba origem'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,'118957','ONYX',formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),formatMoney(r.comissao),r.usuario,r.sheetName]))}
 function renderExpediaPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,EXPEDIA_CLIENT_CODE,EXPEDIA_CLIENT_CODE,EXPEDIA_CLIENT_NAME,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),r.usuario]))}
 function renderMovidaPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,MOVIDA_CLIENT_CODE,MOVIDA_CLIENT_CODE,MOVIDA_CLIENT_NAME,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),r.usuario]))}
+function renderBestBuyPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Retorno','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,BESTBUY_CLIENT_CODE,BESTBUY_CLIENT_CODE,BESTBUY_CLIENT_NAME,formatDateBR(r.retorno),formatMoney(r.comissao),r.usuario]))}
 function renderTable(headers,rows){$('previewTable').innerHTML=`<thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(value=>`<td>${valueOrBlank(value)}</td>`).join('')}</tr>`).join('')}</tbody>`}
-function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();const isBenner=activeModule==='onyx'&&onyxMode==='benner';const isExpedia=activeModule==='expedia';const isMovida=activeModule==='movida';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_Tratado')));XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isMovida?'Movida convertido para layout BENNER':(isExpedia?'Expedia convertido para layout BENNER':(isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado'))),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_TRATADO')));XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
+function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();const isBenner=activeModule==='onyx'&&onyxMode==='benner';const isExpedia=activeModule==='expedia';const isMovida=activeModule==='movida';const isBestBuy=activeModule==='bestbuy';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_Tratado'))));XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isBestBuy?'Best Buy convertido para layout BENNER':(isMovida?'Movida convertido para layout BENNER':(isExpedia?'Expedia convertido para layout BENNER':(isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado')))),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isBestBuy?'BESTBUY_BENNER':(isMovida?'MOVIDA_BENNER':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_TRATADO'))));XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
 function valueOrBlank(v){return v===''||v===null||v===undefined?'<span class="empty-value">—</span>':escapeHtml(String(v))}function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}function showMessage(t,type){message.textContent=t;message.className=`message show ${type}`}function clearMessage(){message.textContent='';message.className='message'}
 switchModule('quero');
 </script>
