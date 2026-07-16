@@ -11,7 +11,7 @@
     .topbar{min-height:78px;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;gap:20px;color:#fff;background:linear-gradient(120deg,#0c2f52,#174d7d);box-shadow:0 8px 24px rgba(10,38,66,.18)}
     .brand{display:flex;align-items:center;gap:13px}.brand-mark{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;font-weight:900;color:#143b61;background:var(--accent);box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
     .brand h1{margin:0;font-size:clamp(18px,2vw,24px)}.brand p{margin:4px 0 0;color:#cdddec;font-size:12px}.badge{padding:8px 12px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.1);font-size:12px;white-space:nowrap}
-    main{width:min(1320px,92vw);margin:30px auto 60px}.module-nav{display:flex;gap:10px;margin-bottom:22px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:max-content;max-width:100%}
+    main{width:min(1320px,92vw);margin:30px auto 60px}.module-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);width:max-content;max-width:100%}
     .module-btn{border:0;border-radius:11px;padding:13px 22px;font:inherit;font-weight:800;cursor:pointer;color:var(--primary);background:#edf3f8;transition:.2s}.module-btn.active{color:#fff;background:linear-gradient(135deg,var(--primary2),var(--primary));box-shadow:0 7px 16px rgba(18,58,99,.2)}.submodule-nav{display:none;gap:9px;margin:-10px 0 22px 12px;flex-wrap:wrap}.submodule-nav.visible{display:flex}.submodule-btn{border:1px solid var(--border);border-radius:10px;padding:10px 16px;font:inherit;font-weight:750;cursor:pointer;color:var(--primary);background:#fff;transition:.2s}.submodule-btn.active{color:#fff;border-color:var(--success);background:var(--success);box-shadow:0 6px 14px rgba(17,132,91,.18)}
     .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:24px;margin-bottom:24px}.card{background:var(--card);border:1px solid rgba(220,228,237,.9);border-radius:20px;box-shadow:var(--shadow)}.upload-card{padding:30px}.eyebrow{color:var(--primary2);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}.upload-card h2{margin:8px 0 10px;font-size:clamp(25px,3vw,38px);line-height:1.12}.upload-card>p{margin:0 0 24px;color:var(--muted);line-height:1.6}
     .drop-zone{min-height:190px;border:2px dashed #aebfd0;border-radius:17px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:25px;text-align:center;cursor:pointer;transition:.2s;background:#f9fbfd}.drop-zone:hover,.drop-zone.dragover{border-color:var(--primary2);background:#eef6fd;transform:translateY(-1px)}.drop-icon{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,var(--primary2),var(--primary));font-size:27px}.drop-zone strong{font-size:17px}.drop-zone span{color:var(--muted);font-size:13px}#fileInput{display:none}
@@ -24,7 +24,7 @@
 <body>
 <header class="topbar"><div class="brand"><div class="brand-mark">↔</div><div><h1>Conversor de Relatórios</h1><p id="brandSubtitle">Quero Passagem → Layout padrão de comissões</p></div></div><div class="badge">Processamento local e seguro</div></header>
 <main>
-  <nav class="module-nav"><button class="module-btn active" data-module="quero">Quero Passagem</button><button class="module-btn" data-module="onyx">ONYX</button></nav>
+  <nav class="module-nav"><button class="module-btn active" data-module="quero">Quero Passagem</button><button class="module-btn" data-module="onyx">ONYX</button><button class="module-btn" data-module="expedia">Expedia</button></nav>
   <nav class="submodule-nav" id="onyxSubnav"><button class="submodule-btn active" data-onyx-mode="tratado">ONYX Tratado</button><button class="submodule-btn" data-onyx-mode="benner">ONYX x BENNER</button></nav>
   <section class="hero">
     <div class="card upload-card"><div class="eyebrow" id="eyebrow">Conversão automática</div><h2 id="moduleTitle">Quero Passagem</h2><p id="moduleDescription">Selecione o Excel exportado pela Quero Passagem. O sistema reorganiza as colunas, calcula as diárias e gera um novo arquivo pronto para importação.</p><label class="drop-zone" id="dropZone" for="fileInput"><div class="drop-icon">⇧</div><strong id="dropTitle">Clique ou arraste o relatório aqui</strong><span>Arquivo aceito: .xlsx ou .xls</span></label><input type="file" id="fileInput" accept=".xlsx,.xls"><div id="message" class="message"></div></div>
@@ -39,10 +39,12 @@ const QUERO_HEADERS=['Nº do Pedido','Reserva ( confirmação ) ','Contrato','C�
 const ONYX_HEADERS=['CONFIATA','HOTELNAME','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','RCPAIDCOMMISSION','PAYMENTDATE'];
 const BENNER_HEADERS=QUERO_HEADERS;
 const COMPANY_NAME='Copastur viagens e turismo ltda', COMPANY_CNPJ='43.637.214/0001-86';
+const EXPEDIA_COMPANY_NAME='Copastur Viagens e Turismo Ltda', EXPEDIA_CLIENT_CODE='13165', EXPEDIA_CLIENT_NAME='Expedia';
 const MODULES={
   quero:{title:'Quero Passagem',subtitle:'Quero Passagem → Layout padrão de comissões',description:'Selecione o Excel exportado pela Quero Passagem. O sistema reorganiza as colunas, calcula as diárias e gera um novo arquivo pronto para importação.',required:['Localizador','Data Partida','Data Chegada','Comissão','Passageiro'],valueLabel:'Comissão total',mappings:[['Localizador','Pedido e reserva'],['Data Partida','Saída'],['Data Chegada','Retorno'],['Retorno − Saída','Diárias'],['Comissão','Valores total, pago e comissão'],['Passageiro','Nome do usuário']]},
   onyx:{title:'ONYX',subtitle:'ONYX → Layout tratado para conciliação',description:'Selecione o DataExtract da ONYX. O sistema mantém somente as colunas necessárias, reordena os dados, converte as datas e renomeia AGENTPAYMENTDATE para PAYMENTDATE.',required:['CONFIATA','HOTELNAME','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','RCPAIDCOMMISSION','AGENTPAYMENTDATE'],valueLabel:'Comissão paga',mappings:[['CONFIATA','Código IATA'],['HOTELNAME','Hotel'],['GUESTNAME','Hóspede'],['CONFNO','Confirmação'],['CONFDATEIN / OUT','Check-in e check-out'],['RCPAIDCOMMISSION','Comissão paga'],['AGENTPAYMENTDATE','PAYMENTDATE']]},
-  onyxBenner:{title:'ONYX x BENNER',subtitle:'ONYX → Layout padrão BENNER',description:'Selecione o arquivo ONYX já tratado. O sistema lê todas as abas mensais válidas, usa o valor da comissão ajustado e gera o mesmo layout padrão utilizado na Quero Passagem.',required:['CONFIATA','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','Valor da comissão ajustado'],valueLabel:'Comissão ajustada',mappings:[['CONFIATA','Nº do Pedido'],['CONFNO','Reserva'],['CONFDATEIN / OUT','Saída e retorno'],['Retorno − Saída','Diárias'],['Valor da comissão ajustado','Valores total, pago e comissão'],['GUESTNAME','Nome do usuário'],['118957 / ONYX','Cliente fixo']]}
+  onyxBenner:{title:'ONYX x BENNER',subtitle:'ONYX → Layout padrão BENNER',description:'Selecione o arquivo ONYX já tratado. O sistema lê todas as abas mensais válidas, usa o valor da comissão ajustado e gera o mesmo layout padrão utilizado na Quero Passagem.',required:['CONFIATA','GUESTNAME','CONFNO','CONFDATEIN','CONFDATEOUT','Valor da comissão ajustado'],valueLabel:'Comissão ajustada',mappings:[['CONFIATA','Nº do Pedido'],['CONFNO','Reserva'],['CONFDATEIN / OUT','Saída e retorno'],['Retorno − Saída','Diárias'],['Valor da comissão ajustado','Valores total, pago e comissão'],['GUESTNAME','Nome do usuário'],['118957 / ONYX','Cliente fixo']]},
+  expedia:{title:'Expedia x BENNER',subtitle:'Expedia → Layout padrão BENNER',description:'Selecione o relatório TAAP Commission Statement da Expedia. O sistema identifica automaticamente a linha do cabeçalho, calcula as diárias e gera o layout pronto para importação no BENNER.',required:['Itinerary Number','Travel Start Date','Travel End Date','Commission','Traveler Name'],valueLabel:'Comissão total',mappings:[['Itinerary Number','Pedido, reserva e contrato'],['Travel Start / End Date','Saída e retorno'],['Retorno − Saída','Diárias'],['Commission','Valor da comissão'],['Traveler Name','Nome do usuário'],['13165 / Expedia','Cliente fixo']]}
 };
 let activeModule='quero',onyxMode='tratado',selectedFile=null,sourceRows=[],sourceSheets=[],convertedRows=[],convertedSheet=null;
 const $=id=>document.getElementById(id),fileInput=$('fileInput'),dropZone=$('dropZone'),dropTitle=$('dropTitle'),statusCard=$('statusCard'),tableCard=$('tableCard'),message=$('message'),convertBtn=$('convertBtn'),downloadBtn=$('downloadBtn');
@@ -53,7 +55,7 @@ fileInput.addEventListener('change',e=>{if(e.target.files?.[0])loadFile(e.target
 ['dragenter','dragover'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
 ['dragleave','drop'].forEach(t=>dropZone.addEventListener(t,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
 dropZone.addEventListener('drop',e=>{const f=e.dataTransfer.files?.[0];if(f)loadFile(f)});
-convertBtn.addEventListener('click',()=>activeModule==='quero'?convertQuero():(onyxMode==='benner'?convertOnyxBenner():convertOnyx()));
+convertBtn.addEventListener('click',()=>activeModule==='quero'?convertQuero():(activeModule==='expedia'?convertExpedia():(onyxMode==='benner'?convertOnyxBenner():convertOnyx())));
 downloadBtn.addEventListener('click',downloadConvertedFile);$('newFileBtn').addEventListener('click',()=>fileInput.click());
 
 function currentConfig(){return activeModule==='onyx'&&onyxMode==='benner'?MODULES.onyxBenner:MODULES[activeModule]}
@@ -88,6 +90,20 @@ async function loadFile(file){
       });
       if(!sourceSheets.length)throw new Error('Nenhuma aba contém as colunas necessárias para ONYX x BENNER.');
       sourceRows=sourceSheets.flatMap(s=>s.rows.map(row=>({...row,__sheetName:s.name})));
+    }else if(activeModule==='expedia'){
+      const sh=wb.Sheets[wb.SheetNames[0]];
+      const matrix=XLSX.utils.sheet_to_json(sh,{header:1,defval:null,raw:true});
+      const requiredNormalized=cfg.required.map(normalizeHeader);
+      const headerIndex=matrix.findIndex(row=>{
+        const normalized=(row||[]).map(normalizeHeader);
+        return requiredNormalized.every(h=>normalized.includes(h));
+      });
+      if(headerIndex<0)throw new Error(`Não foi possível localizar o cabeçalho da Expedia. Colunas esperadas: ${cfg.required.join(', ')}.`);
+      const headers=matrix[headerIndex].map(v=>String(v??'').trim());
+      sourceRows=matrix.slice(headerIndex+1).filter(row=>row.some(v=>v!==null&&v!==undefined&&String(v).trim()!=='')).map(row=>{
+        const obj={};headers.forEach((h,i)=>{if(h)obj[h]=row[i]??null});return obj;
+      });
+      if(!sourceRows.length)throw new Error('O arquivo Expedia não contém linhas de transações.');
     }else{
       const sh=wb.Sheets[wb.SheetNames[0]];
       sourceRows=XLSX.utils.sheet_to_json(sh,{defval:null,raw:true});
@@ -129,13 +145,35 @@ function convertOnyxBenner(){
   finishConversion(total,ignored);renderOnyxBennerPreview();
 }
 
+function convertExpedia(){
+  if(!sourceRows.length)return;
+  const data=[BENNER_HEADERS];convertedRows=[];let ignored=0,total=0;
+  sourceRows.forEach(row=>{
+    const itineraryRaw=findField(row,['Itinerary Number']);
+    const traveler=findField(row,['Traveler Name']);
+    const saida=excelSerialToDate(findField(row,['Travel Start Date']));
+    const retorno=excelSerialToDate(findField(row,['Travel End Date']));
+    const comissao=parseNumber(findField(row,['Commission']));
+    if(itineraryRaw===null&&!traveler&&!saida&&!retorno&&comissao===0){ignored++;return}
+    const itinerary=itineraryRaw==null?'':String(itineraryRaw),excelRow=data.length+1;
+    total+=comissao;
+    data.push([itinerary,itinerary,itinerary,EXPEDIA_CLIENT_CODE,EXPEDIA_COMPANY_NAME,COMPANY_CNPJ,EXPEDIA_CLIENT_CODE,EXPEDIA_CLIENT_NAME,saida,retorno,null,'','','','','','',comissao,traveler||'','','','']);
+    convertedRows.push({pedido:itinerary,reserva:itinerary,contrato:itinerary,saida,retorno,diarias:saida&&retorno?Math.round((retorno-saida)/86400000):'',comissao,usuario:traveler||'',excelRow});
+  });
+  convertedSheet=XLSX.utils.aoa_to_sheet(data,{cellDates:true});
+  convertedRows.forEach(x=>convertedSheet[`K${x.excelRow}`]=x.saida&&x.retorno?{t:'n',f:`J${x.excelRow}-I${x.excelRow}`,v:x.diarias}:{t:'s',v:''});
+  formatSheet(convertedSheet,data.length,['I','J'],['R'],22,true);
+  finishConversion(total,ignored);renderExpediaPreview();
+}
+
 function formatSheet(sheet,rowCount,dateCols,moneyCols,colCount,standardLayout=false){dateCols.forEach(col=>{for(let r=2;r<=rowCount;r++){const c=sheet[`${col}${r}`];if(c)c.z='dd/mm/yyyy'}});moneyCols.forEach(col=>{for(let r=2;r<=rowCount;r++){const c=sheet[`${col}${r}`];if(c)c.z='#,##0.00'}});sheet['!autofilter']={ref:`A1:${XLSX.utils.encode_col(colCount-1)}${rowCount}`};sheet['!freeze']={xSplit:0,ySplit:1};if(activeModule==='quero'||standardLayout)sheet['!cols']=[{wch:17},{wch:23},{wch:13},{wch:16},{wch:38},{wch:20},{wch:18},{wch:24},{wch:12},{wch:12},{wch:10},{wch:15},{wch:18},{wch:19},{wch:14},{wch:14},{wch:14},{wch:19},{wch:34},{wch:3},{wch:14},{wch:14}]}
 function finishConversion(total,ignored){$('kpiConverted').textContent=convertedRows.length;$('kpiValue').textContent=formatMoney(total);$('kpiIgnored').textContent=ignored;$('fileDetails').textContent='Conversão concluída. Confira a prévia e baixe o arquivo.';downloadBtn.disabled=convertedRows.length===0;tableCard.classList.add('visible');showMessage(`Conversão concluída: ${convertedRows.length} linhas prontas.`,'success')}
 function renderQueroPreview(){renderTable(['Nº do Pedido','Reserva','Razão Social','CNPJ','Saída','Retorno','Diárias','Valor Pago','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,COMPANY_NAME,COMPANY_CNPJ,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),formatMoney(r.comissao),r.usuario]))}
 function renderOnyxPreview(){renderTable(ONYX_HEADERS,convertedRows.slice(0,100).map(r=>[r.confiata,r.hotel,r.guest,r.confno,formatDateBR(r.dateIn),formatDateBR(r.dateOut),formatMoney(r.commission),formatDateBR(r.paymentDate)]))}
 function renderOnyxBennerPreview(){renderTable(['Nº do Pedido','Reserva','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor Pago','Valor da comissão','Nome do usuário','Aba origem'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,'118957','ONYX',formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),formatMoney(r.comissao),r.usuario,r.sheetName]))}
+function renderExpediaPreview(){renderTable(['Nº do Pedido','Reserva','Contrato','Código Localiza','Código do cliente','Nome do cliente','Saída','Retorno','Diárias','Valor da comissão','Nome do usuário'],convertedRows.slice(0,100).map(r=>[r.pedido,r.reserva,r.contrato,EXPEDIA_CLIENT_CODE,EXPEDIA_CLIENT_CODE,EXPEDIA_CLIENT_NAME,formatDateBR(r.saida),formatDateBR(r.retorno),r.diarias,formatMoney(r.comissao),r.usuario]))}
 function renderTable(headers,rows){$('previewTable').innerHTML=`<thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(value=>`<td>${valueOrBlank(value)}</td>`).join('')}</tr>`).join('')}</tbody>`}
-function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();const isBenner=activeModule==='onyx'&&onyxMode==='benner';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isBenner?'ONYX_BENNER':'ONYX_Tratado');XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado'),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isBenner?'ONYX_BENNER':'ONYX_TRATADO');XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
+function downloadConvertedFile(){if(!convertedSheet||!selectedFile)return;const wb=XLSX.utils.book_new();const isBenner=activeModule==='onyx'&&onyxMode==='benner';const isExpedia=activeModule==='expedia';const sheetName=activeModule==='quero'?'Layout_Comissoes':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_Tratado'));XLSX.utils.book_append_sheet(wb,convertedSheet,sheetName);const cfg=currentConfig();wb.Props={Title:isExpedia?'Expedia convertido para layout BENNER':(isBenner?'ONYX convertido para layout BENNER':(activeModule==='quero'?'Layout padrão de importação de comissão':'Relatório ONYX tratado')),Subject:`Conversão automática ${cfg.title}`,Author:'Conversor de Relatórios'};const clean=selectedFile.name.replace(/\.(xlsx|xls)$/i,'');const suffix=activeModule==='quero'?'CONVERTIDO':(isExpedia?'EXPEDIA_BENNER':(isBenner?'ONYX_BENNER':'ONYX_TRATADO'));XLSX.writeFile(wb,`${clean}_${suffix}.xlsx`,{compression:true,cellDates:true})}
 function valueOrBlank(v){return v===''||v===null||v===undefined?'<span class="empty-value">—</span>':escapeHtml(String(v))}function escapeHtml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}function showMessage(t,type){message.textContent=t;message.className=`message show ${type}`}function clearMessage(){message.textContent='';message.className='message'}
 switchModule('quero');
 </script>
